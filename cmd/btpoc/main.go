@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -31,6 +32,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	// I need to defer the cleaning of resources.
+	defer func() {
+		if cerr := adapter.Close(); cerr != nil {
+			errors.Join(err, cerr)
+		}
+	}()
+
 	// Discover
 	err = adapter.Discover()
 	if err != nil {
@@ -55,6 +63,7 @@ func main() {
 		i := 0
 		for _, d := range devices {
 			fmt.Printf("[%d] %s (%s)\n", i+1, d.Name, d.Address)
+			i++
 		}
 	}
 

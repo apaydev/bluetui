@@ -9,6 +9,22 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
+// These values were obtained through the busctl command:
+const (
+	// busctl list gives us this first value, which is the well-known name
+	// name for the bluetooth D-Bus.
+	bluezDestination = "org.bluez"
+	// busctl tree org.bluez gives us the object path to our BT adapter,
+	// as well as the paths to all of the devices connected to it.
+	adapterPath = "/org/bluez/hci0"
+	// busctl introspect org.bluez /org/bluez/hci0 gives us the interfaces
+	// and methods available for the BT adapter, and for the Device adapter.
+	adapterInterface = "org.bluez.Adapter1"
+	deviceInterface  = "org.bluez.Device1"
+	// Standard interface to work with properties of D-Bus objects.
+	propertiesInterface = "org.freedesktop.DBus.Properties"
+)
+
 // linuxAdapter is a Linux-specific implementation of the Adapter interface.
 // It uses D-Bus to communicate with the BlueZ stack.
 type linuxAdapter struct {
@@ -27,8 +43,8 @@ func newSystemBusConn() (*dbus.Conn, error) {
 	return conn, err
 }
 
-// NewLinuxAdapter creates a new Linux-specific Bluetooth adapter.
-func NewLinuxAdapter(destination, path string) (Adapter, error) {
+// NewAdapter creates a new Linux-specific Bluetooth adapter.
+func NewAdapter(destination, path string) (Adapter, error) {
 	conn, err := newSystemBusConn()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to system bus: %w", err)
@@ -51,6 +67,7 @@ func NewLinuxAdapter(destination, path string) (Adapter, error) {
 	}, nil
 }
 
+// Discover starts the discovery process for Bluetooth devices.
 func (b *linuxAdapter) Discover() (err error) {
 	fmt.Println("Starting discovery. This may take a few seconds ...")
 	// Pretty self explainatory. Begin scanning for devices, and defer
@@ -80,6 +97,8 @@ func (b *linuxAdapter) Discover() (err error) {
 	return nil
 }
 
+// getDevicesInfo is a helper function that retrieves the information of discovered
+// devices in our BlueZ object.
 func (b *linuxAdapter) getDevicesInfo() error {
 	var objs map[dbus.ObjectPath]map[string]map[string]dbus.Variant
 	// Call the GetManagedObjects method to get all the devices that BlueZ
@@ -117,6 +136,7 @@ func (b *linuxAdapter) getDevicesInfo() error {
 	return nil
 }
 
+// Pair attempts to pair with a Bluetooth device using its address.
 func (b *linuxAdapter) Pair(deviceAddress string) error {
 	if deviceAddress == "" {
 		return errors.New("a device address is required")
@@ -140,6 +160,7 @@ func (b *linuxAdapter) Pair(deviceAddress string) error {
 	return nil
 }
 
+// Trust attempts to trust a Bluetooth device using its address.
 func (b *linuxAdapter) Trust(deviceAddress string) error {
 	if deviceAddress == "" {
 		return errors.New("a device address is required")
@@ -158,6 +179,7 @@ func (b *linuxAdapter) Trust(deviceAddress string) error {
 	return nil
 }
 
+// Connect attempts to connect to a Bluetooth device using its address.
 func (b *linuxAdapter) Connect(deviceAddress string) error {
 	if deviceAddress == "" {
 		return errors.New("a device address is required")
@@ -176,6 +198,7 @@ func (b *linuxAdapter) Connect(deviceAddress string) error {
 	return nil
 }
 
+// Disconnect attempts to disconnect from a Bluetooth device using its address.
 func (b *linuxAdapter) Disconnect(deviceAddress string) error {
 	if deviceAddress == "" {
 		return errors.New("a device address is required")
@@ -193,6 +216,7 @@ func (b *linuxAdapter) Disconnect(deviceAddress string) error {
 	return nil
 }
 
+// Devices returns a list of discovered Bluetooth devices.
 func (b *linuxAdapter) Devices() ([]device, error) {
 	if len(b.devices) == 0 {
 		return nil, errors.New("no devices found")
@@ -204,4 +228,15 @@ func (b *linuxAdapter) Devices() ([]device, error) {
 	}
 
 	return devices, nil
+}
+
+// Close closes the connection to the D-Bus used by the adapter.
+func (b *linuxAdapter) Close() error {
+	if b.conn != nil {
+		err := b.conn.Close()
+		if err != nil {
+			return fmt.Errorf("failed to close D-Bus connection: %w", err)
+		}
+	}
+	return nil
 }

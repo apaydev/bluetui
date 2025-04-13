@@ -11,12 +11,7 @@ type Adapter interface {
 	Connect(addr string) error
 	Disconnect(addr string) error
 	Devices() ([]device, error)
-}
-
-// NewAdapter creates a new Bluetooth adapter instance based on the
-// platform. By default, it returns a Linux adapter.
-func NewAdapter(destination, path string) (Adapter, error) {
-	return NewLinuxAdapter(destination, path)
+	Close() error
 }
 
 // adapterBase provides a base implementation for our bluetooth adapters. It
