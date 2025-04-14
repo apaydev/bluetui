@@ -26,7 +26,7 @@ func main() {
 
 	// I want to work with my bluetooth adapter. So, I need to get the
 	// object for it, which will give me interfaces, devices and methods.
-	adapter, err := bluetooth.NewAdapter("", "")
+	adapter, err := bluetooth.NewAdapter("", "", bluetooth.NewSystemBusConnection)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get bluetooth adapter: %v\n", err)
 		os.Exit(1)

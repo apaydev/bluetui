@@ -29,23 +29,13 @@ const (
 // It uses D-Bus to communicate with the BlueZ stack.
 type linuxAdapter struct {
 	adapterBase
-	conn       *dbus.Conn
-	adapterObj dbus.BusObject
-}
-
-// newSystemBusConn creates a new connection to the system-wide D-Bus.
-func newSystemBusConn() (*dbus.Conn, error) {
-	// Conecting to the system-wide D-Bus
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to system bus: %w", err)
-	}
-	return conn, err
+	conn       dbusConn
+	adapterObj dbusObject
 }
 
 // NewAdapter creates a new Linux-specific Bluetooth adapter.
-func NewAdapter(destination, path string) (Adapter, error) {
-	conn, err := newSystemBusConn()
+func NewAdapter(destination, path string, connFact ConnectionFactory) (Adapter, error) {
+	conn, err := connFact()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to system bus: %w", err)
 	}
