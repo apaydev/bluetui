@@ -39,9 +39,9 @@ func (c *defaultDbusConn) Object(dest string, path dbus.ObjectPath) dbusObject {
 	return c.Conn.Object(dest, path)
 }
 
-// ConnectionFactory is a function type that creates a dbusConn. Useful
+// DbusConnectionFactory is a function type that creates a dbusConn. Useful
 // for creating mocks.
-type ConnectionFactory func() (dbusConn, error)
+type DbusConnectionFactory func() (dbusConn, error)
 
 // NewSystemBusConnection creates a real connection to the system bus.
 func NewSystemBusConnection() (dbusConn, error) {

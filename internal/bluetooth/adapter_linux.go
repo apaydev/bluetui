@@ -34,8 +34,8 @@ type linuxAdapter struct {
 }
 
 // NewAdapter creates a new Linux-specific Bluetooth adapter.
-func NewAdapter(destination, path string, connFact ConnectionFactory) (Adapter, error) {
-	conn, err := connFact()
+func NewAdapter(destination, path string, dbusConnFact DbusConnectionFactory) (Adapter, error) {
+	conn, err := dbusConnFact()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to system bus: %w", err)
 	}
