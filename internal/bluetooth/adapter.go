@@ -1,11 +1,13 @@
 package bluetooth
 
+import "context"
+
 // Adapter defines the behavior of a platform-specific Bluetooth adapter.
 //
 // Implementations are expected to handle OS-specific logic behind methods like
 // Discover, Connect, etc.
 type Adapter interface {
-	Discover() error
+	Discover(context.Context) error
 	Pair(addr string) error
 	Trust(addr string) error
 	Connect(addr string) error

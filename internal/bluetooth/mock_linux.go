@@ -1,6 +1,8 @@
 package bluetooth
 
 import (
+	"fmt"
+
 	"github.com/godbus/dbus/v5"
 )
 
@@ -11,10 +13,6 @@ type mockDbusConn struct {
 }
 
 func (m *mockDbusConn) Object(destination string, path dbus.ObjectPath) dbusObject {
-	key := string(path)
-	if obj, ok := m.objects[key]; ok {
-		return &obj
-	}
 	// Return a no-op object if not found (can be improved to simulate errors)
 	return &mockBusObject{}
 }
@@ -31,15 +29,15 @@ type mockBusObject struct {
 
 func (m *mockBusObject) Call(method string, flags dbus.Flags, args ...any) *dbus.Call {
 	m.CallHistory = append(m.CallHistory, method)
+	// If the args contain the string "error", simulate an error
+	if len(args) > 0 && args[0] == "error" {
+		return &dbus.Call{Err: fmt.Errorf("simulated error")}
+	}
 	// Fake successful call
 	return &dbus.Call{}
 }
 
 // NewMockConnection is a factory that returns a mock connection for testing.
 func NewMockConnection() (dbusConn, error) {
-	return &mockDbusConn{
-		objects: map[string]mockBusObject{
-			"/org/bluez/hci0": {},
-		},
-	}, nil
+	return &mockDbusConn{}, nil
 }

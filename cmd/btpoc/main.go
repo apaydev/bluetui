@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/apaydev/bluetui/internal/bluetooth"
 )
@@ -40,7 +42,10 @@ func main() {
 	}()
 
 	// Discover
-	err = adapter.Discover()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = adapter.Discover(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to discover devices: %v\n", err)
 		os.Exit(1)

@@ -1,10 +1,10 @@
 package bluetooth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -71,9 +71,9 @@ func (a *linuxAdapter) Path() string {
 	return a.path
 }
 
-// Discover starts the discovery process for Bluetooth devices.
-func (b *linuxAdapter) Discover() (err error) {
-	fmt.Println("Starting discovery. This may take a few seconds ...")
+// Discover starts the discovery process for Bluetooth devices. This is a blocking
+// function.
+func (b *linuxAdapter) Discover(ctx context.Context) (err error) {
 	// Pretty self explainatory. Begin scanning for devices, and defer
 	// the call to stop that process.
 	err = b.adapterObj.Call(adapterInterface+".StartDiscovery", 0).Err
@@ -89,8 +89,13 @@ func (b *linuxAdapter) Discover() (err error) {
 		}
 	}()
 
-	// Give the process some time to run.
-	time.Sleep(5 * time.Second)
+	// Wait for context to be done (timeout or cancellation)
+	<-ctx.Done()
+
+	// If user canceled discovery explicitly
+	if ctx.Err() == context.Canceled {
+		return fmt.Errorf("discovery canceled by user")
+	}
 
 	// Get the devices that were discovered.
 	err = b.getDevicesInfo()
