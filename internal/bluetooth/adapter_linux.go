@@ -50,11 +50,25 @@ func NewAdapter(destination, path string, dbusConnFact DbusConnectionFactory) (A
 		pth = adapterPath
 	}
 
+	// The adapter that we return is going to use the conn returned by our factory,
+	// which means that we can easily mock stuff.
 	return &linuxAdapter{
 		conn:        conn,
 		adapterBase: adapterBase{destination: dest, path: pth},
 		adapterObj:  conn.Object(dest, dbus.ObjectPath(pth)),
 	}, nil
+}
+
+// Destination returns the destination name of the Bluetooth adapter. By default,
+// this is the well-known name for the BlueZ D-Bus interface.
+func (a *linuxAdapter) Destination() string {
+	return a.destination
+}
+
+// Path returns the object path of the Bluetooth adapter. By default, this is
+// the path to the first Bluetooth adapter on the system.
+func (a *linuxAdapter) Path() string {
+	return a.path
 }
 
 // Discover starts the discovery process for Bluetooth devices.
@@ -99,7 +113,7 @@ func (b *linuxAdapter) getDevicesInfo() error {
 		return fmt.Errorf("failed to get managed objects: %w", err)
 	}
 
-	devices := make(map[string]device)
+	devices := make(map[string]Device)
 
 	for path, ifaceMap := range objs {
 		if dev, ok := ifaceMap[deviceInterface]; ok {
@@ -117,7 +131,7 @@ func (b *linuxAdapter) getDevicesInfo() error {
 				name = "<unknown>"
 			}
 
-			devices[addr] = device{Name: name, Address: addr, Path: path}
+			devices[addr] = Device{name: name, address: addr, path: string(path)}
 		}
 	}
 
@@ -132,8 +146,8 @@ func (b *linuxAdapter) Pair(deviceAddress string) error {
 		return errors.New("a device address is required")
 	}
 
-	devicePath := b.devices[deviceAddress].Path
-	device := b.conn.Object(b.destination, devicePath)
+	devicePath := b.devices[deviceAddress].Path()
+	device := b.conn.Object(b.destination, dbus.ObjectPath(devicePath))
 
 	// Try pairing
 	err := device.Call(deviceInterface+".Pair", 0).Err
@@ -156,8 +170,8 @@ func (b *linuxAdapter) Trust(deviceAddress string) error {
 		return errors.New("a device address is required")
 	}
 
-	devicePath := b.devices[deviceAddress].Path
-	device := b.conn.Object(b.destination, devicePath)
+	devicePath := b.devices[deviceAddress].Path()
+	device := b.conn.Object(b.destination, dbus.ObjectPath(devicePath))
 
 	// Trust the device
 	err := device.Call(propertiesInterface+".Set", 0, deviceInterface, "Trusted", dbus.MakeVariant(true)).Err
@@ -175,8 +189,8 @@ func (b *linuxAdapter) Connect(deviceAddress string) error {
 		return errors.New("a device address is required")
 	}
 
-	devicePath := b.devices[deviceAddress].Path
-	device := b.conn.Object(b.destination, devicePath)
+	devicePath := b.devices[deviceAddress].Path()
+	device := b.conn.Object(b.destination, dbus.ObjectPath(devicePath))
 
 	// Try connecting
 	err := device.Call(deviceInterface+".Connect", 0).Err
@@ -194,8 +208,8 @@ func (b *linuxAdapter) Disconnect(deviceAddress string) error {
 		return errors.New("a device address is required")
 	}
 
-	devicePath := b.devices[deviceAddress].Path
-	device := b.conn.Object(b.destination, devicePath)
+	devicePath := b.devices[deviceAddress].Path()
+	device := b.conn.Object(b.destination, dbus.ObjectPath(devicePath))
 
 	err := device.Call(deviceInterface+".Disconnect", 0).Err
 	if err != nil {
@@ -207,12 +221,12 @@ func (b *linuxAdapter) Disconnect(deviceAddress string) error {
 }
 
 // Devices returns a list of discovered Bluetooth devices.
-func (b *linuxAdapter) Devices() ([]device, error) {
+func (b *linuxAdapter) Devices() ([]Device, error) {
 	if len(b.devices) == 0 {
 		return nil, errors.New("no devices found")
 	}
 
-	devices := make([]device, 0, len(b.devices))
+	devices := make([]Device, 0, len(b.devices))
 	for _, dev := range b.devices {
 		devices = append(devices, dev)
 	}

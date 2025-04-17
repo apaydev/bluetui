@@ -62,7 +62,7 @@ func main() {
 		fmt.Println("\nDiscovered Devices:")
 		i := 0
 		for _, d := range devices {
-			fmt.Printf("[%d] %s (%s)\n", i+1, d.Name, d.Address)
+			fmt.Printf("[%d] %s (%s)\n", i+1, d.Name(), d.Address())
 			i++
 		}
 	}
