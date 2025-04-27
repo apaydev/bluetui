@@ -51,3 +51,22 @@ func (d Device) Address() string {
 func (d Device) Path() string {
 	return d.path
 }
+
+// METHODS REQUIRED SO THAT THIS CAN BE USED AS A LIST ITEM
+
+func (d Device) Title() string       { return d.name }
+func (d Device) Description() string { return d.address }
+func (d Device) FilterValue() string { return d.name }
+
+// NOTE: Func used only to test the integration with the list bubble. This
+// will be either modified or removed.
+func GetDevices() []Device {
+	return []Device{
+		{name: "Device 1", address: "00:00:00:00:00:01", path: "/org/bluez/hci0/dev_00_00_00_00_00_01"},
+		{name: "Device 2", address: "00:00:00:00:00:02", path: "/org/bluez/hci0/dev_00_00_00_00_00_02"},
+		{name: "Device 3", address: "00:00:00:00:00:03", path: "/org/bluez/hci0/dev_00_00_00_00_00_03"},
+		{name: "Device 4", address: "00:00:00:00:00:04", path: "/org/bluez/hci0/dev_00_00_00_00_00_04"},
+		{name: "Device 5", address: "00:00:00:00:00:05", path: "/org/bluez/hci0/dev_00_00_00_00_00_05"},
+		{name: "Device 6", address: "00:00:00:00:00:06", path: "/org/bluez/hci0/dev_00_00_00_00_00_06"},
+	}
+}

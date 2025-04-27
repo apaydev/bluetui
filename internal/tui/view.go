@@ -1,26 +1,10 @@
 package tui
 
-import "fmt"
+import "github.com/charmbracelet/lipgloss"
 
 func (m model) View() string {
-	// The header
-	s := "Select a device to connect\n\n"
+	listView := lipgloss.NewStyle().PaddingTop(2).Render(m.list.View())
+	helpView := lipgloss.NewStyle().Padding(0, 2).Render(m.help.View(m.keys))
 
-	// Iterate over our devices
-	for i, choice := range m.devices {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.cursor == i {
-			cursor = ">" // cursor!
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
-	}
-
-	helpView := m.help.View(m.keys)
-
-	// Send the UI for rendering
-	return s + "\n" + helpView
+	return lipgloss.JoinVertical(lipgloss.Left, listView, helpView)
 }

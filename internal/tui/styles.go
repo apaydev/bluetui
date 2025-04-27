@@ -12,6 +12,8 @@ const (
 	helpDesc        = lipgloss.Color("#808080")
 )
 
+var appStyle = lipgloss.NewStyle().Padding(1, 2)
+
 func styledHelp(help help.Model) help.Model {
 	// The ellipsis is the "..." shown when text is truncated.
 	help.Styles.Ellipsis = lipgloss.NewStyle().Foreground(lipgloss.Color(wrapperEllipsis))

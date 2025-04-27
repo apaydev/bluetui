@@ -1,13 +1,15 @@
 package tui
 
 import (
+	"github.com/apaydev/bluetui/internal/bluetooth"
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
-	// TODO: Change this for the actual device struct.
-	devices []string
+	list list.Model
 	// TODO: This will be used to render the selected option with a different
 	// style.
 	cursor int
@@ -18,12 +20,32 @@ type model struct {
 // NewModel defines the app's initial state
 func NewModel() model {
 	m := model{
-		devices: []string{"Willen II", "Galaxy Buds", "Logitech MX Master 3"},
-		keys:    newKeyMap(),
-		help:    help.New(),
+		keys: newKeyMap(),
+		help: help.New(),
 	}
 
+	// Setup help
 	m.help = styledHelp(m.help)
+
+	// Make initial list of items
+	devices := bluetooth.GetDevices()
+
+	items := make([]list.Item, len(devices))
+	for i := range devices {
+		items[i] = devices[i]
+	}
+
+	// Setup List
+	deviceList := list.New(items, list.NewDefaultDelegate(), 0, 0)
+	deviceList.Title = "Bluetooth Devices"
+	deviceList.Styles.Title = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FFFDF5")).
+		Background(lipgloss.Color("#25A065")).
+		Padding(0, 1)
+	deviceList.SetShowHelp(false)
+
+	m.list = deviceList
+
 	return m
 }
 
