@@ -17,14 +17,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// its view as needed.
 		m.help.Width = msg.Width
 	case tea.KeyMsg:
-		// Don't match any of the keys below if we're actively filtering.
+		// // Don't match any of the keys below if we're actively filtering.
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
 
 		switch {
 		case key.Matches(msg, m.keys.help):
-			m.help.ShowAll = !m.help.ShowAll
+			// switch to default help for full view (better rendering)
+			m.list.SetShowHelp(!m.list.ShowHelp())
+		case key.Matches(msg, m.keys.filter) && m.list.ShowHelp():
+			m.list.Help.ShowAll = false // change default back to short help to keep in sync
+			m.list.SetShowHelp(false)
 		}
 	}
 

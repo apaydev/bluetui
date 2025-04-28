@@ -1,10 +1,29 @@
 package tui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+)
 
+// NOTE: Need to check if I can simplify this.
 func (m model) View() string {
-	listView := lipgloss.NewStyle().PaddingTop(2).Render(m.list.View())
-	helpView := lipgloss.NewStyle().Padding(0, 2).Render(m.help.View(m.keys))
+	listView := m.list.View()
+	helpView := lipgloss.NewStyle().PaddingLeft(2).Render(m.help.View(m.keys))
 
-	return lipgloss.JoinVertical(lipgloss.Left, listView, helpView)
+	switch {
+	case m.list.ShowHelp():
+		return lipgloss.NewStyle().
+			PaddingTop(1).
+			Render(listView)
+	case m.list.SettingFilter():
+		return lipgloss.NewStyle().
+			PaddingTop(1).
+			Render(listView + "\n" + lipgloss.NewStyle().
+				Padding(0, 2).
+				Render(m.help.View(m.filterKeys)),
+			)
+	default:
+		return lipgloss.NewStyle().
+			PaddingTop(1).
+			Render(listView + "\n" + helpView)
+	}
 }

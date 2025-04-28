@@ -12,16 +12,18 @@ type model struct {
 	list list.Model
 	// TODO: This will be used to render the selected option with a different
 	// style.
-	cursor int
-	keys   keyMap
-	help   help.Model
+	cursor     int
+	keys       keyMap
+	filterKeys filterKeyMap
+	help       help.Model
 }
 
 // NewModel defines the app's initial state
 func NewModel() model {
 	m := model{
-		keys: newKeyMap(),
-		help: help.New(),
+		keys:       newKeyMap(),
+		filterKeys: newFilterKeyMap(),
+		help:       help.New(),
 	}
 
 	// Setup help

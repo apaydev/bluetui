@@ -28,14 +28,15 @@ func (k keyMap) ShortHelp() []key.Binding {
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
-// key.Map interface.
+// key.Map interface. It is empty because we are going to use the default
+// one for the list bubble, which has some functionalities integrated (like
+// the clear filter option) that would be a paint to rebuild.
 func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.up, k.down, k.prevPage, k.nextPage}, // first column
-		{k.help, k.quit},                       // second column
-	}
+	return [][]key.Binding{}
 }
 
+// newKeyMap returns the default help keymap to be used in the app.
+// NOTE: Need to add the missing keybindings
 func newKeyMap() keyMap {
 	return keyMap{
 		up: key.NewBinding(
@@ -54,6 +55,18 @@ func newKeyMap() keyMap {
 			key.WithKeys("right", "l"),
 			key.WithHelp("→/l/pgdn", "next page"),
 		),
+		filter: key.NewBinding(
+			key.WithKeys("/"),
+			key.WithHelp("/", "filter"),
+		),
+		pair: key.NewBinding(
+			key.WithKeys("p"),
+			key.WithHelp("p", "pair"),
+		),
+		connect: key.NewBinding(
+			key.WithKeys("c"),
+			key.WithHelp("c", "connect"),
+		),
 		help: key.NewBinding(
 			key.WithKeys("?"),
 			key.WithHelp("?", "help"),
@@ -61,6 +74,38 @@ func newKeyMap() keyMap {
 		quit: key.NewBinding(
 			key.WithKeys("q", "esc", "ctrl+c"),
 			key.WithHelp("q", "quit"),
+		),
+	}
+}
+
+// filterKeyMap is only used for the filter input view
+type filterKeyMap struct {
+	apply  key.Binding
+	cancel key.Binding
+}
+
+// ShortHelp returns keys for the mini help menu while filtering
+func (f filterKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{
+		key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "apply filter")),
+		key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
+	}
+}
+
+// FullHelp returns nothing because we don't need full help while filtering
+func (f filterKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{}
+}
+
+func newFilterKeyMap() filterKeyMap {
+	return filterKeyMap{
+		apply: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "apply filter"),
+		),
+		cancel: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "cancel filter"),
 		),
 	}
 }
